@@ -249,7 +249,11 @@ export default function App() {
               Sign in
             </button>
           )}
-          <button className="button primary share-button" onClick={share}>
+          <button
+            className="button primary share-button"
+            aria-label="Share a design"
+            onClick={share}
+          >
             <Plus size={16} />
             <span>Share a design</span>
           </button>
