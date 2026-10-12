@@ -35,3 +35,15 @@ Keep database content and additive migrations. Roll back frontend code to a know
 References: [Supabase redirect configuration](https://supabase.com/docs/guides/auth/redirect-urls), [API key guidance](https://supabase.com/docs/guides/getting-started/api-keys), [current free-tier limits](https://supabase.com/pricing).
 
 Provisioned project: `qujticcgxmlpzkxkznrh` (CSS Pro, us-east-1), https://qujticcgxmlpzkxkznrh.supabase.co . GitHub provider configured; consult ROADMAP.md for current launch blockers.
+
+## Hosted migration history
+
+The provisioning connector assigned execution timestamps instead of repository filename versions. These migrations are already applied; do not blindly run `supabase db push` against this project or replay them.
+
+| Repository version | Hosted history version | Name |
+|---|---|---|
+| 202610090001 | 20261012201335 | initial |
+| 202610120001 | 20261012201550 | community |
+| 202610120002 | 20261012201656 | dashboard_rls_helper |
+
+Before adopting CLI-based production migrations, review this mapping and explicitly authorize reconciliation using the supported migration-history procedure. Direct catalog rewriting was rejected by automatic approval review and was not performed. Local disposable stacks continue using repository migrations normally.
