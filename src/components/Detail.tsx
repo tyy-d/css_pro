@@ -17,6 +17,7 @@ import {
 import type { Design, Viewer } from "../lib/types";
 import { previewDocument } from "../lib/preview";
 import { downloadDesign, handoff } from "../lib/download";
+import { getDesign } from "../lib/repository";
 export function Detail({
   design: d,
   viewer,
@@ -242,7 +243,16 @@ export function Detail({
             onClick={async () => {
               setBusy(true);
               try {
-                await downloadDesign(d);
+                const current = await getDesign(d.id);
+                if (!current || current.status !== "published")
+                  throw new Error(
+                    "This design is no longer available for download.",
+                  );
+                if (current.assets.some((a) => a.error))
+                  throw new Error(
+                    "An image could not load. Retry the download.",
+                  );
+                await downloadDesign(current);
                 notify("Your design package is ready.");
               } catch (e) {
                 notify(e instanceof Error ? e.message : "Download failed.");

@@ -1,4 +1,3 @@
-import JSZip from "jszip";
 import { designUrl } from "./urls";
 import type { Design } from "./types";
 export const license = (name: string) =>
@@ -7,6 +6,7 @@ export function handoff(d: Design) {
   return `Use "${d.title}" by ${d.creator} as the visual reference for my website.\n\nPreserve its typography hierarchy, spacing rhythm, color palette, layout proportions, and responsive behavior while adapting the content to my project. Do not introduce unrelated visual styles.\n\n${d.instructions}\n\n${d.type === "code" ? "Inspect index.html, styles.css, references/, and any included assets before implementing. Adapt them to the current project framework." : "Use the images in references/ and PROMPT.md as the design reference. Results may vary by model."}\n\nKeep the creator credit and MIT license with reused code.\nSource: ${designUrl(d.id)}`;
 }
 export async function createPackage(d: Design) {
+  const { default: JSZip } = await import("jszip");
   const zip = new JSZip();
   if (d.type === "code") {
     zip.file(

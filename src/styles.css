@@ -2047,3 +2047,8 @@ label > textarea::placeholder {
     scroll-behavior: auto !important;
   }
 }
+
+.card-image[data-image-error]::after { content: attr(data-image-error); position: absolute; inset: 35% 1rem auto; color: #666; font-size: .8rem; }
+
+@media (max-width: 800px) { .header-actions .logout { display: inline-flex; } .header-actions { gap: 6px; } }
+.upload-thumbs button { position: static; }

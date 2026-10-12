@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowLeft,
@@ -18,16 +18,25 @@ import {
   Star,
   X,
 } from "lucide-react";
-import type { Design, Report, Viewer } from "./lib/types";
+import type {
+  Design,
+  DesignSummary,
+  EditorDraft,
+  Collection,
+  Report,
+  Viewer,
+} from "./lib/types";
 import { TAGS } from "./lib/types";
 import * as repo from "./lib/repository";
-import { readFilters, searchDesigns, type Filters } from "./lib/search";
+import { readFilters, type Filters } from "./lib/search";
 import { DesignCard } from "./components/DesignCard";
 import { Detail } from "./components/Detail";
 import { Submit } from "./components/Submit";
 import { Modal } from "./components/Modal";
+import { consumeAuthError, routeAccess } from "./lib/auth";
+import { rememberIntent, consumeIntent } from "./lib/authIntent";
 export default function App() {
-  const [designs, setDesigns] = useState<Design[]>([]);
+  const [designs, setDesigns] = useState<DesignSummary[]>([]);
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [stars, setStars] = useState<string[]>([]);
   const [filters, setFilters] = useState<Filters>(readFilters);
@@ -40,10 +49,11 @@ export default function App() {
   const [creator, setCreator] = useState(() =>
     new URLSearchParams(location.search).get("creator"),
   );
-  const [editing, setEditing] = useState<Design | undefined>();
+  const [editing, setEditing] = useState<EditorDraft | undefined>();
   const [modal, setModal] = useState<
-    "login" | "about" | "report" | "delete" | null
+    "login" | "about" | "report" | "delete" | "profile" | null
   >(null);
+  const [displayName, setDisplayName] = useState("");
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -51,37 +61,93 @@ export default function App() {
   const [reportReason, setReportReason] = useState("");
   const [reports, setReports] = useState<Report[]>([]);
   const [busy, setBusy] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<Design | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<DesignSummary | null>(
+    null,
+  );
   const notify = useCallback((s: string) => setToast(s), []);
+  const [detail, setDetail] = useState<Design | null>(null);
+  const [total, setTotal] = useState(0);
+  const [revision, setRevision] = useState(0);
+  const unsaved = useRef(false);
+  const currentUrl = useRef(location.pathname + location.search);
+  const onDirtyChange = useCallback((dirty: boolean) => {
+    unsaved.current = dirty;
+  }, []);
+  const refreshVersion = useRef(0);
   const refresh = useCallback(async () => {
+    const version = ++refreshVersion.current;
     try {
-      const [v, ds, ss] = await Promise.all([
-        repo.getViewer(),
-        repo.listDesigns(),
-        repo.getStars(),
-      ]);
+      const [v, ss] = await Promise.all([repo.getViewer(), repo.getStars()]);
+      const nextReports = v?.admin ? await repo.listReports() : [];
+      if (version !== refreshVersion.current) return;
+      setReports(nextReports);
       setViewer(v);
-      setDesigns(ds);
+      if (v) {
+        const intent = consumeIntent();
+        if (intent) {
+          history.replaceState({}, "", intent.path);
+          const params = new URLSearchParams(location.search);
+          setRoute(
+            intent.action === "share"
+              ? "submit"
+              : params.get("view") || "explore",
+          );
+          setDetailId(intent.designId || params.get("design"));
+          setFilters(readFilters());
+          if (intent.action === "star" && intent.designId) {
+            await repo.toggleStar(intent.designId, true);
+            ss.push(intent.designId);
+          }
+          if (intent.action === "report") setModal("report");
+        }
+      }
+      setRevision((n) => n + 1);
       setStars(ss);
       setError("");
-      if (v?.admin) setReports(await repo.listReports());
     } catch (e) {
+      if (version !== refreshVersion.current) return;
+      setViewer(null);
+      setDesigns([]);
+      setStars([]);
+      setReports([]);
       setError(
         e instanceof Error
           ? e.message
           : "Could not load designs. Check your connection and try again.",
       );
     } finally {
-      setLoading(false);
+      if (version === refreshVersion.current) setLoading(false);
     }
   }, []);
   useEffect(() => {
+    const authError = consumeAuthError();
+    if (authError) {
+      const intent = consumeIntent();
+      if (intent) {
+        history.replaceState({}, "", intent.path);
+        const params = new URLSearchParams(location.search);
+        setRoute(params.get("view") || "explore");
+        setDetailId(intent.designId || params.get("design"));
+        setFilters(readFilters());
+      }
+      notify(authError);
+    }
     void refresh();
     const sub = repo.supabase?.auth.onAuthStateChange(() => {
+      ++refreshVersion.current;
+      setLoading(true);
+      setViewer(null);
+      setDesigns([]);
+      setStars([]);
+      setReports([]);
+      setEditing(undefined);
+      setDetail(null);
+      setModal(null);
+      repo.clearPrivateState();
       setTimeout(() => void refresh(), 0);
     });
     return () => sub?.data.subscription.unsubscribe();
-  }, [refresh]);
+  }, [refresh, notify]);
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(""), 4500);
@@ -89,6 +155,11 @@ export default function App() {
   }, [toast]);
   useEffect(() => {
     const pop = () => {
+      if (unsaved.current && !confirm("Leave without saving your changes?")) {
+        history.pushState({}, "", currentUrl.current);
+        return;
+      }
+      currentUrl.current = location.pathname + location.search;
       const p = new URLSearchParams(location.search);
       setFilters(readFilters());
       setRoute(p.get("view") || "explore");
@@ -99,22 +170,33 @@ export default function App() {
     return () => window.removeEventListener("popstate", pop);
   }, []);
   function navigate(view = "explore", id?: string, creatorId?: string) {
-    const p = new URLSearchParams();
+    if (unsaved.current && !confirm("Leave without saving your changes?"))
+      return;
+    unsaved.current = false;
+    const p = new URLSearchParams(location.search);
+    if (!id && !detailId && view !== route) {
+      ["q", "tag", "type", "scope", "sort", "page"].forEach((k) => p.delete(k));
+      setFilters({
+        q: "",
+        tags: [],
+        type: "all",
+        scope: "all",
+        sort: "newest",
+        page: 1,
+      });
+    }
+    p.delete("view");
+    p.delete("design");
+    p.delete("creator");
+    p.delete("edit");
     if (view !== "explore") p.set("view", view);
     if (id) p.set("design", id);
     if (creatorId) p.set("creator", creatorId);
     history.pushState({}, "", p.size ? `?${p}` : location.pathname);
+    currentUrl.current = location.pathname + location.search;
     setRoute(view);
     setDetailId(id || null);
     setCreator(creatorId || null);
-    setFilters({
-      q: "",
-      tags: [],
-      type: "all",
-      scope: "all",
-      sort: "newest",
-      page: 1,
-    });
     window.scrollTo({ top: 0, behavior: "instant" });
   }
   function changeFilters(patch: Partial<Filters>) {
@@ -132,6 +214,8 @@ export default function App() {
   }
   function share() {
     if (!viewer) {
+      navigate("submit");
+      rememberIntent("share");
       setModal("login");
       return;
     }
@@ -140,16 +224,28 @@ export default function App() {
   }
   async function star(id: string) {
     if (!viewer) {
+      rememberIntent("star", id);
       setModal("login");
       return;
     }
     if (busy) return;
     setBusy(true);
     try {
-      await repo.toggleStar(id, !stars.includes(id));
+      const active = !stars.includes(id);
+      setStars((v) => (active ? [...v, id] : v.filter((x) => x !== id)));
+      setDesigns((v) =>
+        v.map((d) =>
+          d.id === id ? { ...d, stars: d.stars + (active ? 1 : -1) } : d,
+        ),
+      );
+      setDetail((d) =>
+        d?.id === id ? { ...d, stars: d.stars + (active ? 1 : -1) } : d,
+      );
+      await repo.toggleStar(id, active);
       await refresh();
     } catch (e) {
-      notify(e instanceof Error ? e.message : String(e));
+      await refresh();
+      notify(repo.message(e));
     } finally {
       setBusy(false);
     }
@@ -157,9 +253,10 @@ export default function App() {
   async function auth(provider: "google" | "github") {
     setBusy(true);
     try {
+      if (!sessionStorage.getItem("css-pro-auth-intent")) rememberIntent();
+      setModal(null);
       await repo.signIn(provider);
       await refresh();
-      setModal(null);
       if (repo.demo)
         notify("Demo session started. Changes stay in this browser.");
     } catch (e) {
@@ -168,22 +265,89 @@ export default function App() {
       setBusy(false);
     }
   }
-  const detail = designs.find(
-    (d) =>
-      d.id === detailId &&
-      (d.status === "published" || d.owner_id === viewer?.id || viewer?.admin),
-  );
-  const base = designs.filter((d) =>
-    route === "mine"
-      ? d.owner_id === viewer?.id
-      : route === "stars"
-        ? d.status === "published" && stars.includes(d.id)
-        : d.status === "published" && (!creator || d.owner_id === creator),
-  );
-  const filtered = searchDesigns(base, filters);
-  const pageCount = Math.max(1, Math.ceil(filtered.length / 9));
-  const page = Math.min(filters.page, pageCount);
-  const visible = filtered.slice((page - 1) * 9, page * 9);
+  useEffect(() => {
+    let live = true;
+    setLoading(true);
+    setDetail(null);
+    const collection: Collection =
+      route === "admin"
+        ? "hidden"
+        : route === "mine" || route === "stars"
+          ? route
+          : "explore";
+    const load = async () => {
+      try {
+        if (detailId) {
+          const value = await repo.getDesign(detailId);
+          if (live) setDetail(value);
+        } else {
+          const result = await repo.browseDesigns(filters, collection, creator);
+          if (live) {
+            setDesigns(result.items);
+            setTotal(result.total);
+          }
+        }
+        if (live) setError("");
+      } catch (e) {
+        if (live) {
+          setError(repo.message(e));
+          setDesigns([]);
+        }
+      } finally {
+        if (live) setLoading(false);
+      }
+    };
+    void load();
+    return () => {
+      live = false;
+    };
+  }, [filters, route, creator, detailId, revision]);
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get("edit");
+    if (route !== "submit" || !id || !viewer) return;
+    let live = true;
+    void repo
+      .getEditorDraft(id)
+      .then((d) => {
+        if (live) setEditing(d);
+      })
+      .catch((e) => {
+        if (live) notify(repo.message(e));
+      });
+    return () => {
+      live = false;
+    };
+  }, [route, viewer?.id, notify]);
+  function persistEditor(id: string) {
+    const p = new URLSearchParams(location.search);
+    p.set("edit", id);
+    history.replaceState({}, "", `?${p}`);
+  }
+  async function edit(id: string) {
+    try {
+      const draft = await repo.getEditorDraft(id);
+      setEditing(draft);
+      navigate("submit");
+      persistEditor(id);
+    } catch (e) {
+      notify(repo.message(e));
+    }
+  }
+  const pageCount = Math.max(1, Math.ceil(total / 9));
+  const page = filters.page;
+  const visible = designs;
+  const access = routeAccess(route, viewer, loading);
+  if (repo.configurationError)
+    return (
+      <main className="empty-state">
+        <h1>Community configuration needs attention</h1>
+        <p>{repo.configurationError}</p>
+        <p>
+          Ask the site administrator to correct the production deployment
+          configuration.
+        </p>
+      </main>
+    );
   return (
     <>
       <header className="site-header">
@@ -213,7 +377,7 @@ export default function App() {
           </button>
           <button
             className={route === "stars" ? "active" : ""}
-            onClick={() => (viewer ? navigate("stars") : setModal("login"))}
+            onClick={() => navigate("stars")}
           >
             My stars
           </button>
@@ -227,18 +391,34 @@ export default function App() {
               <button
                 className="account-button"
                 title="My designs"
+                aria-label="My designs"
                 onClick={() => navigate("mine")}
               >
                 <span className="avatar">{viewer.name[0]}</span>
                 <span className="account-name">My designs</span>
               </button>
               <button
+                onClick={() => {
+                  setDisplayName(viewer.name);
+                  setModal("profile");
+                }}
+              >
+                Edit profile
+              </button>
+              <button
                 className="icon-btn logout"
                 aria-label="Sign out"
                 onClick={async () => {
-                  await repo.signOut();
-                  await refresh();
-                  navigate();
+                  try {
+                    await repo.signOut();
+                    setEditing(undefined);
+                    setReports([]);
+                    repo.clearPrivateState();
+                    await refresh();
+                    navigate();
+                  } catch (e) {
+                    notify(e instanceof Error ? e.message : String(e));
+                  }
                 }}
               >
                 <LogOut size={16} />
@@ -259,6 +439,12 @@ export default function App() {
           </button>
         </div>
       </header>
+      {viewer?.suspended && (
+        <p role="alert" className="notice">
+          Your account is suspended. Publishing, uploads and interactions are
+          disabled. Contact the site administrator.
+        </p>
+      )}
       {repo.demo && (
         <div className="demo-bar">
           <span>
@@ -271,13 +457,48 @@ export default function App() {
           </button>
         </div>
       )}
-      {route === "submit" && viewer ? (
+      {access === "loading" || access === "login" || access === "denied" ? (
+        <main className="empty-state" aria-live="polite">
+          <h1>
+            {access === "loading"
+              ? "Checking your session…"
+              : access === "denied"
+                ? "Administrator access required"
+                : "Sign in to continue"}
+          </h1>
+          {error && <p role="alert">{error}</p>}
+          {access === "login" && (
+            <button
+              className="button primary"
+              onClick={() => setModal("login")}
+            >
+              Sign in
+            </button>
+          )}
+          <button className="button" onClick={() => navigate()}>
+            Back to explore
+          </button>
+        </main>
+      ) : route === "submit" &&
+        viewer &&
+        new URLSearchParams(location.search).has("edit") &&
+        !editing ? (
+        <main className="empty-state">
+          <h1>Loading your private draft…</h1>
+          <button className="button" onClick={() => navigate("mine")}>
+            Back to My designs
+          </button>
+        </main>
+      ) : route === "submit" && viewer ? (
         <Submit
           key={editing?.id || "new"}
           initial={editing}
+          onDirtyChange={onDirtyChange}
+          onPersisted={persistEditor}
           viewer={viewer}
           onClose={() => navigate("mine")}
           onSaved={async (d) => {
+            unsaved.current = false;
             await refresh();
             navigate(
               d.status === "published" ? "explore" : "mine",
@@ -294,12 +515,17 @@ export default function App() {
               viewer={viewer}
               starred={stars.includes(detail.id)}
               onStar={() => void star(detail.id)}
-              onBack={() => navigate()}
+              onBack={() => navigate(route, undefined, creator || undefined)}
               onEdit={() => {
-                setEditing(detail);
-                navigate("submit");
+                void edit(detail.id);
               }}
-              onReport={() => (viewer ? setModal("report") : setModal("login"))}
+              onReport={() => {
+                if (viewer) setModal("report");
+                else {
+                  rememberIntent("report", detail.id);
+                  setModal("login");
+                }
+              }}
               onCreator={() => navigate("explore", undefined, detail.owner_id)}
               notify={notify}
             />
@@ -357,6 +583,20 @@ export default function App() {
                 >
                   Hide design
                 </button>
+                <button
+                  className="button"
+                  onClick={async () => {
+                    try {
+                      await repo.moderate(r.design_id, "resolve");
+                      await refresh();
+                      notify("Report resolved.");
+                    } catch (e) {
+                      notify(repo.message(e));
+                    }
+                  }}
+                >
+                  Resolve report
+                </button>
               </div>
             ))}
           {designs
@@ -368,15 +608,39 @@ export default function App() {
                 <button
                   className="button"
                   onClick={async () => {
-                    await repo.moderate(d.id, "restore");
-                    await refresh();
-                    notify("Design restored.");
+                    try {
+                      await repo.moderate(d.id, "restore");
+                      await refresh();
+                      notify("Design restored.");
+                    } catch (e) {
+                      notify(repo.message(e));
+                    }
                   }}
                 >
                   Restore
                 </button>
               </div>
             ))}
+          {error && <p role="alert">{error}</p>}
+          {pageCount > 1 && (
+            <nav className="pagination" aria-label="Hidden designs pages">
+              <button
+                disabled={page <= 1}
+                onClick={() => changeFilters({ page: page - 1 })}
+              >
+                Previous
+              </button>
+              <span>
+                {page} / {pageCount}
+              </span>
+              <button
+                disabled={page >= pageCount}
+                onClick={() => changeFilters({ page: page + 1 })}
+              >
+                Next
+              </button>
+            </nav>
+          )}
         </main>
       ) : (
         <main className="explore-page">
@@ -403,7 +667,7 @@ export default function App() {
                   </>
                 ) : creator ? (
                   <>
-                    {base[0]?.creator || "Creator"}
+                    {designs[0]?.creator || "Creator"}
                     <em>’s collection.</em>
                   </>
                 ) : (
@@ -547,7 +811,7 @@ export default function App() {
                       : "The collection"}
               </strong>
               <span>
-                {filtered.length} {filtered.length === 1 ? "design" : "designs"}
+                {total} {total === 1 ? "design" : "designs"}
               </span>
             </div>
             <label className="sort-label">
@@ -585,15 +849,14 @@ export default function App() {
                   <DesignCard
                     design={d}
                     starred={stars.includes(d.id)}
-                    onOpen={() => navigate("explore", d.id)}
+                    onOpen={() => navigate(route, d.id, creator || undefined)}
                     onStar={() => void star(d.id)}
                   />
                   {route === "mine" && (
                     <div className="owner-actions">
                       <button
                         onClick={() => {
-                          setEditing(d);
-                          navigate("submit");
+                          void edit(d.id);
                         }}
                         disabled={d.status === "hidden"}
                       >
@@ -603,7 +866,7 @@ export default function App() {
                         <button
                           onClick={async () => {
                             try {
-                              await repo.saveDesign({ ...d, status: "draft" });
+                              await repo.unpublishDesign(d.id);
                               await refresh();
                               notify("Design unpublished.");
                             } catch (e) {
@@ -815,6 +1078,37 @@ export default function App() {
               credits and follow any included asset attribution.
             </p>
           </div>
+        </Modal>
+      )}
+      {modal === "profile" && viewer && (
+        <Modal title="Public profile" onClose={() => setModal(null)}>
+          <label>
+            Display name
+            <input
+              value={displayName}
+              maxLength={80}
+              onChange={(e) => setDisplayName(e.target.value)}
+            />
+          </label>
+          <button
+            className="button primary"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await repo.updateProfile(displayName);
+                await refresh();
+                setModal(null);
+                notify("Profile updated.");
+              } catch (e) {
+                notify(repo.message(e));
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            Save profile
+          </button>
         </Modal>
       )}
       {modal === "report" && detail && (

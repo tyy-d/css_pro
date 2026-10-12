@@ -7,6 +7,8 @@ export interface Asset {
   url: string;
   path?: string;
   kind: "screenshot" | "asset";
+  bytes?: number;
+  error?: string;
 }
 export interface Design {
   id: string;
@@ -30,11 +32,13 @@ export interface Design {
   sample?: boolean;
   tool?: string;
   license_accepted?: boolean;
+  revision?: number;
 }
 export interface Viewer {
   id: string;
   name: string;
   admin?: boolean;
+  suspended?: boolean;
 }
 export interface Report {
   id: string;
@@ -74,3 +78,33 @@ export const EMPTY_DESIGN: Omit<
   status: "draft",
   stars: 0,
 };
+
+export type DesignDetail = Design;
+export type DesignSummary = Pick<
+  Design,
+  | "id"
+  | "owner_id"
+  | "creator"
+  | "title"
+  | "description"
+  | "type"
+  | "scope"
+  | "tags"
+  | "assets"
+  | "status"
+  | "created_at"
+  | "updated_at"
+  | "stars"
+  | "sample"
+  | "revision"
+>;
+export interface EditorDraft extends DesignDetail {
+  draft_revision: number;
+  base_revision: number;
+  published: boolean;
+}
+export interface DesignPage {
+  items: DesignSummary[];
+  total: number;
+}
+export type Collection = "explore" | "mine" | "stars" | "hidden";

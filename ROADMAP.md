@@ -50,3 +50,58 @@ Connect the production services, then run the live launch gate. If services are 
 - Hosted code ZIP downloaded and inspected: HTML/CSS, README, MIT license, AI handoff and screenshot reference. Both source URLs retain /css_pro/ correctly.
 - Added accessible name to the icon-only mobile Share button during hosted QA.
 - GitHub Pages hosts the static application only; real OAuth and shared community persistence remain unconfigured.
+
+## Community backend implementation — 2026-10-12
+| ID | Milestone | Status | Gate |
+|---|---|---|---|
+| S1 | Explicit configuration, corrective migration, upload function, new hosted project | Complete — evidence below | Local services pass; hosted project reachable |
+| S2 | OAuth callbacks, profile, recovery and identity isolation | In progress — Google/hosted login pending | Google/GitHub verified on hosted origin |
+| S3 | Private revisioned drafts, uploads, explicit atomic publication | Local implementation verified; hosted gate pending | Both content types complete lifecycle with no draft leakage |
+| S4 | Paginated search, lazy assets, stars and moderation | Local integration verified; hosted gate pending | Anonymous/two-user/admin tests pass |
+| S5 | Accurate starter designs and public beta rollout | Six starters prepared; rollout gates pending | Provider setup, hosted QA and restore drill pass |
+
+Current branch: codex/supabase-community. Supabase plugin connection requested; production configuration remains untouched.
+
+## Auth and protected-route follow-up — 2026-10-12
+- Added loading/sign-in/admin gates for direct `submit`, `mine`, `stars`, and `admin` query routes. Public browsing remains available.
+- OAuth uses PKCE and retains the current app path/query; provider-denial callbacks are cleared and shown as a retryable message. Session changes clear rendered private records, reports and editor state; superseded refreshes cannot commit their results.
+- Added seven focused auth tests for route roles, session restoration/sign-out gates, subpath return URLs and denied callbacks. Full suite: 30 tests passed.
+- Supabase connector discovery found only unrelated inactive `guess-league`; no hosted project was modified. CSS Pro organization selection is pending, followed by required cost confirmation, provider configuration and live OAuth/access tests.
+- Concurrent workspace changes were detected in the repository adapter/config/types during this work; existing changes were preserved. Combined `npm run build` passed. Auth work remains in review pending hosted journeys.
+- Organization confirmed by user: `tyy-d's` (`vgtnlndndtrcqyzvuipb`). Provisioning attempted on 2026-10-12, but the connector returned UNAVAILABLE for its required `get_cost` operation. Plugin discovery confirms Supabase is installed/enabled. Dashboard fallback is open at sign-in; user login is required before continuing setup. No project created and no deployment/data connection changed.
+
+## Community implementation evidence — 2026-10-12
+
+Feature branch `codex/supabase-community`; main and hosted demo have not been changed.
+
+- S1 local foundation implemented: explicit configuration modes, separate working-draft table, revision-checked save/publish RPCs, published-manifest Storage policies, bounded upload bodies, server image type/dimension checks. Hosted provisioning remains blocked on identifying the new project; connector lists only unrelated inactive `guess-league`. User confirmed organization and reported setup ready; project reference requested to resolve the mismatch. No unrelated project modified.
+- S2 local implementation: PKCE callback handling, exact root return URL with same-tab intended actions, private-route guards, display-name editing, sign-out/identity cache clearing, suspended-account messaging. Both real OAuth providers and expired-session browser recovery are launch blockers until hosted verification.
+- S3 implementation: private draft saves, explicit publication, upload progress and individual retry, preserved successful assets, cover selection, navigation/reload guards, editor URL recovery, explicit unpublish-before-delete. Full browser lifecycle for both submission types still needs hosted verification.
+- S4 implementation: nine summaries/page via database RPC, total counts, filters/creator/private stars, lazy detail assets, optimistic stars, report resolution and hide/restore. Downloads recheck current published visibility. Maintenance now retains working-draft assets.
+- Evidence: `npm test` passes **34 tests**, including both SQL migrations, malformed-field rejection, stale revisions, private edit/image isolation, and moderation restore/suspension boundaries. `npm run build` passes. ZIP creation now loads its library on demand (main bundle approximately 556 kB; no chunk-size warning).
+- Real local services: `npm run test:integration` passes against Docker Supabase Auth, Storage and Edge Function. Covers two ordinary users plus explicit test admin; invalid uploads/non-owner uploads; unpublished assets; unique concurrent stars; concurrent publication (one winner); profile update; report/hide/restore; unpublish; and denied admin escalation. Temporary users/assets are cleaned up.
+- Browser demo evidence: share prompts sign-in and returns to editor; explicit private save succeeds; named draft recovers after reload using its editor URL. Mobile header sign-out retained. This is local browser evidence, not hosted OAuth proof.
+- S5 **not complete**: six accurate original starter screenshots and owner publication, provider configuration/logs, hosted anonymous/two-user/admin QA, export/restore drill and rollback verification remain before beta. Existing demo illustrations are not imported or represented as verified starter screenshots.
+- Operational setup and remaining launch procedure: `supabase/README.md`; public demo remains operational. Never enable production Supabase mode until these gates are evidenced.
+
+### Starter preparation and review branch
+- Draft PR: https://github.com/tyy-d/css_pro/pull/1 (not merged; no deployment).
+- Six original source packages prepared in `starter-designs/designs.json`, with JPEGs captured directly from each exact HTML/CSS document at 800 × 640. Covers and text were inspected in the browser. These are clearly labeled static starter designs, not functional applications.
+- `scripts/import-starters.mjs` creates owner-authenticated private drafts by default, requires explicit project/owner identity, and only publishes with `--publish`. It has not been run against the hosted project. Owner attribution/publication remain launch blockers.
+- Local browser sign-out returned to anonymous gallery and removed private editor/account controls.
+
+- Added pull-request validation workflow: demo-only build/unit tests plus disposable local Supabase integration tests. CI execution evidence is pending its first run; it receives no production variables.
+
+### Hosted foundation now provisioned
+- Created `css-pro` in confirmed free organization `tyy-d's`, US East North Virginia (`us-east-1`). Project ref: `qujticcgxmlpzkxkznrh`; dashboard: https://supabase.com/dashboard/project/qujticcgxmlpzkxkznrh . Earlier provisioning blockers above are resolved.
+- Applied initial, community, and dashboard-RLS-helper corrective migrations. Deployed `upload-image` version 1 with explicit `auth.getUser()` token validation. Gateway JWT validation is disabled for modern key compatibility; the function itself rejects unsigned requests.
+- Hosted smoke checks: anonymous discovery returns HTTP 200 with empty collection; unsigned upload returns HTTP 400 “Sign in to upload.” No test users or demo submissions were imported into production.
+- Auth site URL and exact allowlist saved: `https://tyy-d.github.io/css_pro/`, `http://127.0.0.1:5173/`, `http://127.0.0.1:4173/`.
+- Created GitHub OAuth app CSS Pro under tyy-d, with Supabase callback; GitHub provider shows enabled. Client secret was transferred directly between configuration interfaces, never written to repository or chat. Email-password provider disabled; Google setup is in progress.
+- Security advisor: rate/reservation tables intentionally have RLS with no client policies; authenticated SECURITY DEFINER mutations and self-role helper warnings are expected for the explicitly authorized RPC design. Dashboard event-trigger helper execution was revoked from public API roles. Review guidance: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable . This is not a claim that all hosted launch checks passed.
+- CI proof: https://github.com/tyy-d/css_pro/actions/runs/38301867354 passed unit tests, build, real isolated Supabase integration and cleanup. Browser testing also caught and fixed live FileList clearing before async upload; a selected screenshot now remains in the draft and explicit local publication succeeds.
+- Production Pages configuration remains demo; Google OAuth, verified admin account, starter publication, hosted user journeys and restore/rollback gate are still pending.
+
+- Extended local browser verification: uploaded screenshot retained after file-input reset, full code publication, private title edit saved without changing public title, conversion to prompt recipe and explicit Publish changes all passed. Google Cloud Console project selector remains loading; requested the user's intended Google project ID. GitHub is configured but real hosted OAuth/account activation is not yet verified.
+- Latest feature-head CI passed: https://github.com/tyy-d/css_pro/actions/runs/38303895940 (34 unit tests, build, isolated real Supabase integration, cleanup). Downloaded prompt-recipe ZIP inspected: prompt, screenshot, README, AI handoff and MIT license present.
+- Hosted connector migration timestamps differ from repository filenames. Mapping documented in `supabase/README.md`; automatic approval review rejected direct history-catalog rewriting, so no rewrite occurred. Future CLI production migration adoption requires explicit reconciliation before push; runtime services are unaffected.
