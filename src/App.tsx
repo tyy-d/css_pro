@@ -607,15 +607,39 @@ export default function App() {
                 <button
                   className="button"
                   onClick={async () => {
-                    await repo.moderate(d.id, "restore");
-                    await refresh();
-                    notify("Design restored.");
+                    try {
+                      await repo.moderate(d.id, "restore");
+                      await refresh();
+                      notify("Design restored.");
+                    } catch (e) {
+                      notify(repo.message(e));
+                    }
                   }}
                 >
                   Restore
                 </button>
               </div>
             ))}
+          {error && <p role="alert">{error}</p>}
+          {pageCount > 1 && (
+            <nav className="pagination" aria-label="Hidden designs pages">
+              <button
+                disabled={page <= 1}
+                onClick={() => changeFilters({ page: page - 1 })}
+              >
+                Previous
+              </button>
+              <span>
+                {page} / {pageCount}
+              </span>
+              <button
+                disabled={page >= pageCount}
+                onClick={() => changeFilters({ page: page + 1 })}
+              >
+                Next
+              </button>
+            </nav>
+          )}
         </main>
       ) : (
         <main className="explore-page">
