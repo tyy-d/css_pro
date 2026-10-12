@@ -254,9 +254,9 @@ export default function App() {
     setBusy(true);
     try {
       if (!sessionStorage.getItem("css-pro-auth-intent")) rememberIntent();
+      setModal(null);
       await repo.signIn(provider);
       await refresh();
-      setModal(null);
       if (repo.demo)
         notify("Demo session started. Changes stay in this browser.");
     } catch (e) {

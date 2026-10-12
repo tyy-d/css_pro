@@ -1,0 +1,122 @@
+[
+  {
+    "id": "a1100000-0000-4000-8000-000000000001",
+    "title": "Starter \u00b7 Forma \u2014 room to just be",
+    "description": "An architecture-inspired introduction with warm neutrals, generous spacing and large serif typography.",
+    "type": "code",
+    "scope": "page",
+    "tags": [
+      "Minimal",
+      "Organic"
+    ],
+    "html": "<main class=\"canvas\"><article class=\"card\"><header><span>FORMA</span><span>\u2197</span></header><div class=\"eyebrow\">THOUGHTFULLY MADE / 001</div><h1>Room to<br>just be.</h1><p>An architecture-inspired introduction with warm neutrals, generous spacing and large serif typography.</p><a class=\"cta\">Make it your own \u2197</a><div class=\"decoration\"></div><footer>Good design, shared. &nbsp; \u2014 &nbsp; Forma</footer></article></main>",
+    "css": "html,body{margin:0;min-height:100%;}*{box-sizing:border-box}img{max-width:100%}body{font-family:Georgia,serif;color:#273c2e;background:#dce3d8}.canvas{min-height:100vh;display:grid;place-items:center;padding:40px}.card{position:relative;overflow:hidden;width:100%;max-width:660px;padding:36px;background:#faf9f4;border-radius:18px}header{display:flex;justify-content:space-between;font:700 12px Arial;letter-spacing:2px;border-bottom:1px solid currentColor;padding-bottom:20px}.eyebrow{font:10px Arial;letter-spacing:2px;margin-top:38px;opacity:.6}h1{font-size:clamp(36px,7vw,72px);letter-spacing:-3px;line-height:1.02;margin:22px 0;font-weight:500}p{font:14px/1.7 Arial;max-width:350px;opacity:.7}.cta{display:inline-block;margin-top:20px;padding:13px 20px;background:#273c2e;color:#faf9f4;border-radius:24px;font:12px Arial}.decoration{position:absolute;width:140px;height:140px;right:-30px;bottom:30px;background:currentColor;opacity:.08;border-radius:50%}footer{margin-top:52px;font:10px Arial;opacity:.5}@media(max-width:480px){.canvas{padding:16px}.card{padding:24px}h1{letter-spacing:-1px}}",
+    "prompt": "",
+    "instructions": "Original HTML/CSS starter. Screenshot captured from this exact source at 800 \u00d7 640. Open index.html locally; no packages, scripts, fonts or network resources are required. Change the text and palette, retaining the MIT credit.",
+    "attribution": "Original CSS Pro starter prepared for the project owner. Screenshot is a direct browser render of the supplied HTML/CSS.",
+    "assets": [],
+    "status": "draft",
+    "license_accepted": true,
+    "screenshot": "screenshots/starter-1.jpg"
+  },
+  {
+    "id": "a1100000-0000-4000-8000-000000000002",
+    "title": "Starter \u00b7 The Sunday letter",
+    "description": "A quiet newsletter introduction with warm paper colors, serif typography and a pill-shaped call to action.",
+    "type": "code",
+    "scope": "component",
+    "tags": [
+      "Editorial",
+      "Minimal"
+    ],
+    "html": "<main class=\"canvas\"><article class=\"card\"><header><span>SUNDAY</span><span>\u2197</span></header><div class=\"eyebrow\">THOUGHTFULLY MADE / 001</div><h1>A little less noise.</h1><p>A quiet newsletter introduction with warm paper colors, serif typography and a pill-shaped call to action.</p><a class=\"cta\">Make it your own \u2197</a><div class=\"decoration\"></div><footer>Good design, shared. &nbsp; \u2014 &nbsp; Sunday</footer></article></main>",
+    "css": "html,body{margin:0;min-height:100%;}*{box-sizing:border-box}img{max-width:100%}body{font-family:Georgia,serif;color:#3d4035;background:#e9e6d9}.canvas{min-height:100vh;display:grid;place-items:center;padding:40px}.card{position:relative;overflow:hidden;width:100%;max-width:660px;padding:36px;background:#f9f7f0;border-radius:18px}header{display:flex;justify-content:space-between;font:700 12px Arial;letter-spacing:2px;border-bottom:1px solid currentColor;padding-bottom:20px}.eyebrow{font:10px Arial;letter-spacing:2px;margin-top:38px;opacity:.6}h1{font-size:clamp(36px,7vw,72px);letter-spacing:-3px;line-height:1.02;margin:22px 0;font-weight:500}p{font:14px/1.7 Arial;max-width:350px;opacity:.7}.cta{display:inline-block;margin-top:20px;padding:13px 20px;background:#3d4035;color:#f9f7f0;border-radius:24px;font:12px Arial}.decoration{position:absolute;width:140px;height:140px;right:-30px;bottom:30px;background:currentColor;opacity:.08;border-radius:50%}footer{margin-top:52px;font:10px Arial;opacity:.5}@media(max-width:480px){.canvas{padding:16px}.card{padding:24px}h1{letter-spacing:-1px}}",
+    "prompt": "",
+    "instructions": "Original HTML/CSS starter. Screenshot captured from this exact source at 800 \u00d7 640. Open index.html locally; no packages, scripts, fonts or network resources are required. Change the text and palette, retaining the MIT credit.",
+    "attribution": "Original CSS Pro starter prepared for the project owner. Screenshot is a direct browser render of the supplied HTML/CSS.",
+    "assets": [],
+    "status": "draft",
+    "license_accepted": true,
+    "screenshot": "screenshots/starter-2.jpg"
+  },
+  {
+    "id": "a1100000-0000-4000-8000-000000000003",
+    "title": "Starter \u00b7 After hours player",
+    "description": "A dark violet introduction card with pale typography, a rounded surface and a subtle circular accent.",
+    "type": "code",
+    "scope": "component",
+    "tags": [
+      "Dark",
+      "Minimal"
+    ],
+    "html": "<main class=\"canvas\"><article class=\"card\"><header><span>AFTER HOURS</span><span>\u2197</span></header><div class=\"eyebrow\">THOUGHTFULLY MADE / 001</div><h1>After hours.</h1><p>A dark violet introduction card with pale typography, a rounded surface and a subtle circular accent.</p><a class=\"cta\">Make it your own \u2197</a><div class=\"decoration\"></div><footer>Good design, shared. &nbsp; \u2014 &nbsp; After hours</footer></article></main>",
+    "css": "html,body{margin:0;min-height:100%;}*{box-sizing:border-box}img{max-width:100%}body{font-family:Arial,sans-serif;color:#efecff;background:#202032}.canvas{min-height:100vh;display:grid;place-items:center;padding:40px}.card{position:relative;overflow:hidden;width:100%;max-width:660px;padding:36px;background:#37334f;border-radius:18px}header{display:flex;justify-content:space-between;font:700 12px Arial;letter-spacing:2px;border-bottom:1px solid currentColor;padding-bottom:20px}.eyebrow{font:10px Arial;letter-spacing:2px;margin-top:38px;opacity:.6}h1{font-size:clamp(36px,7vw,72px);letter-spacing:-3px;line-height:1.02;margin:22px 0;font-weight:500}p{font:14px/1.7 Arial;max-width:350px;opacity:.7}.cta{display:inline-block;margin-top:20px;padding:13px 20px;background:#efecff;color:#37334f;border-radius:24px;font:12px Arial}.decoration{position:absolute;width:140px;height:140px;right:-30px;bottom:30px;background:currentColor;opacity:.08;border-radius:50%}footer{margin-top:52px;font:10px Arial;opacity:.5}@media(max-width:480px){.canvas{padding:16px}.card{padding:24px}h1{letter-spacing:-1px}}",
+    "prompt": "",
+    "instructions": "Original HTML/CSS starter. Screenshot captured from this exact source at 800 \u00d7 640. Open index.html locally; no packages, scripts, fonts or network resources are required. Change the text and palette, retaining the MIT credit.",
+    "attribution": "Original CSS Pro starter prepared for the project owner. Screenshot is a direct browser render of the supplied HTML/CSS.",
+    "assets": [],
+    "status": "draft",
+    "license_accepted": true,
+    "screenshot": "screenshots/starter-3.jpg"
+  },
+  {
+    "id": "a1100000-0000-4000-8000-000000000004",
+    "title": "Starter \u00b7 Offgrid studio",
+    "description": "A bold studio introduction with oversized uppercase typography, paper tones and square edges.",
+    "type": "code",
+    "scope": "page",
+    "tags": [
+      "Brutalist",
+      "Typography"
+    ],
+    "html": "<main class=\"canvas\"><article class=\"card\"><header><span>OFFGRID</span><span>\u2197</span></header><div class=\"eyebrow\">THOUGHTFULLY MADE / 001</div><h1>MAKE IT<br>WEIRD.</h1><p>A bold studio introduction with oversized uppercase typography, paper tones and square edges.</p><a class=\"cta\">Make it your own \u2197</a><div class=\"decoration\"></div><footer>Good design, shared. &nbsp; \u2014 &nbsp; Offgrid</footer></article></main>",
+    "css": "html,body{margin:0;min-height:100%;}*{box-sizing:border-box}img{max-width:100%}body{font-family:Arial,sans-serif;color:#252525;background:#efe9d8}.canvas{min-height:100vh;display:grid;place-items:center;padding:40px}.card{position:relative;overflow:hidden;width:100%;max-width:660px;padding:36px;background:#efe9d8;border-radius:0}header{display:flex;justify-content:space-between;font:700 12px Arial;letter-spacing:2px;border-bottom:1px solid currentColor;padding-bottom:20px}.eyebrow{font:10px Arial;letter-spacing:2px;margin-top:38px;opacity:.6}h1{font-size:clamp(36px,7vw,72px);letter-spacing:-3px;line-height:1.02;margin:22px 0;font-weight:900}p{font:14px/1.7 Arial;max-width:350px;opacity:.7}.cta{display:inline-block;margin-top:20px;padding:13px 20px;background:#252525;color:#efe9d8;border-radius:24px;font:12px Arial}.decoration{position:absolute;width:140px;height:140px;right:-30px;bottom:30px;background:currentColor;opacity:.08;border-radius:50%}footer{margin-top:52px;font:10px Arial;opacity:.5}@media(max-width:480px){.canvas{padding:16px}.card{padding:24px}h1{letter-spacing:-1px}}",
+    "prompt": "",
+    "instructions": "Original HTML/CSS starter. Screenshot captured from this exact source at 800 \u00d7 640. Open index.html locally; no packages, scripts, fonts or network resources are required. Change the text and palette, retaining the MIT credit.",
+    "attribution": "Original CSS Pro starter prepared for the project owner. Screenshot is a direct browser render of the supplied HTML/CSS.",
+    "assets": [],
+    "status": "draft",
+    "license_accepted": true,
+    "screenshot": "screenshots/starter-4.jpg"
+  },
+  {
+    "id": "a1100000-0000-4000-8000-000000000005",
+    "title": "Starter \u00b7 Numbers, quietly",
+    "description": "A simple metric summary with monochrome colors, a prominent value and a compact trend label.",
+    "type": "code",
+    "scope": "component",
+    "tags": [
+      "Minimal",
+      "Monochrome"
+    ],
+    "html": "<main class=\"canvas\"><article class=\"card\"><header><span>OVERVIEW</span><span>\u2197</span></header><div class=\"eyebrow\">THOUGHTFULLY MADE / 001</div><h1>$24,680</h1><p>A simple metric summary with monochrome colors, a prominent value and a compact trend label.</p><a class=\"cta\">\u2197 12.8% this month</a><div class=\"decoration\"></div><footer>Good design, shared. &nbsp; \u2014 &nbsp; Overview</footer></article></main>",
+    "css": "html,body{margin:0;min-height:100%;}*{box-sizing:border-box}img{max-width:100%}body{font-family:Arial,sans-serif;color:#242934;background:#e7e9ee}.canvas{min-height:100vh;display:grid;place-items:center;padding:40px}.card{position:relative;overflow:hidden;width:100%;max-width:660px;padding:36px;background:#fbfbfc;border-radius:18px}header{display:flex;justify-content:space-between;font:700 12px Arial;letter-spacing:2px;border-bottom:1px solid currentColor;padding-bottom:20px}.eyebrow{font:10px Arial;letter-spacing:2px;margin-top:38px;opacity:.6}h1{font-size:clamp(36px,7vw,72px);letter-spacing:-3px;line-height:1.02;margin:22px 0;font-weight:500}p{font:14px/1.7 Arial;max-width:350px;opacity:.7}.cta{display:inline-block;margin-top:20px;padding:13px 20px;background:#242934;color:#fbfbfc;border-radius:24px;font:12px Arial}.decoration{position:absolute;width:140px;height:140px;right:-30px;bottom:30px;background:currentColor;opacity:.08;border-radius:50%}footer{margin-top:52px;font:10px Arial;opacity:.5}@media(max-width:480px){.canvas{padding:16px}.card{padding:24px}h1{letter-spacing:-1px}}",
+    "prompt": "",
+    "instructions": "Original HTML/CSS starter. Screenshot captured from this exact source at 800 \u00d7 640. Open index.html locally; no packages, scripts, fonts or network resources are required. Change the text and palette, retaining the MIT credit.",
+    "attribution": "Original CSS Pro starter prepared for the project owner. Screenshot is a direct browser render of the supplied HTML/CSS.",
+    "assets": [],
+    "status": "draft",
+    "license_accepted": true,
+    "screenshot": "screenshots/starter-5.jpg"
+  },
+  {
+    "id": "a1100000-0000-4000-8000-000000000006",
+    "title": "Starter \u00b7 Little wins",
+    "description": "A friendly invitation with rounded shapes, leafy greens and an optimistic typographic hierarchy.",
+    "type": "code",
+    "scope": "component",
+    "tags": [
+      "Playful",
+      "Organic"
+    ],
+    "html": "<main class=\"canvas\"><article class=\"card\"><header><span>LITTLE WINS</span><span>\u2197</span></header><div class=\"eyebrow\">THOUGHTFULLY MADE / 001</div><h1>Big plans.<br>Small steps.</h1><p>A friendly invitation with rounded shapes, leafy greens and an optimistic typographic hierarchy.</p><a class=\"cta\">Make it your own \u2197</a><div class=\"decoration\"></div><footer>Good design, shared. &nbsp; \u2014 &nbsp; Little wins</footer></article></main>",
+    "css": "html,body{margin:0;min-height:100%;}*{box-sizing:border-box}img{max-width:100%}body{font-family:Arial,sans-serif;color:#415b32;background:#dfe9b9}.canvas{min-height:100vh;display:grid;place-items:center;padding:40px}.card{position:relative;overflow:hidden;width:100%;max-width:660px;padding:36px;background:#fbf8e9;border-radius:18px}header{display:flex;justify-content:space-between;font:700 12px Arial;letter-spacing:2px;border-bottom:1px solid currentColor;padding-bottom:20px}.eyebrow{font:10px Arial;letter-spacing:2px;margin-top:38px;opacity:.6}h1{font-size:clamp(36px,7vw,72px);letter-spacing:-3px;line-height:1.02;margin:22px 0;font-weight:500}p{font:14px/1.7 Arial;max-width:350px;opacity:.7}.cta{display:inline-block;margin-top:20px;padding:13px 20px;background:#415b32;color:#fbf8e9;border-radius:24px;font:12px Arial}.decoration{position:absolute;width:140px;height:140px;right:-30px;bottom:30px;background:currentColor;opacity:.08;border-radius:50%}footer{margin-top:52px;font:10px Arial;opacity:.5}@media(max-width:480px){.canvas{padding:16px}.card{padding:24px}h1{letter-spacing:-1px}}",
+    "prompt": "",
+    "instructions": "Original HTML/CSS starter. Screenshot captured from this exact source at 800 \u00d7 640. Open index.html locally; no packages, scripts, fonts or network resources are required. Change the text and palette, retaining the MIT credit.",
+    "attribution": "Original CSS Pro starter prepared for the project owner. Screenshot is a direct browser render of the supplied HTML/CSS.",
+    "assets": [],
+    "status": "draft",
+    "license_accepted": true,
+    "screenshot": "screenshots/starter-6.jpg"
+  }
+]
