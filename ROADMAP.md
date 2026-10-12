@@ -54,11 +54,11 @@ Connect the production services, then run the live launch gate. If services are 
 ## Community backend implementation — 2026-10-12
 | ID | Milestone | Status | Gate |
 |---|---|---|---|
-| S1 | Explicit configuration, corrective migration, upload function, new hosted project | In progress | Local services pass; hosted project reachable |
-| S2 | OAuth callbacks, profile, recovery and identity isolation | Ready | Google/GitHub verified on hosted origin |
-| S3 | Private revisioned drafts, uploads, explicit atomic publication | Ready | Both content types complete lifecycle with no draft leakage |
-| S4 | Paginated search, lazy assets, stars and moderation | Ready | Anonymous/two-user/admin tests pass |
-| S5 | Accurate starter designs and public beta rollout | Ready | Provider setup, hosted QA and restore drill pass |
+| S1 | Explicit configuration, corrective migration, upload function, new hosted project | Complete — evidence below | Local services pass; hosted project reachable |
+| S2 | OAuth callbacks, profile, recovery and identity isolation | In progress — Google/hosted login pending | Google/GitHub verified on hosted origin |
+| S3 | Private revisioned drafts, uploads, explicit atomic publication | Local implementation verified; hosted gate pending | Both content types complete lifecycle with no draft leakage |
+| S4 | Paginated search, lazy assets, stars and moderation | Local integration verified; hosted gate pending | Anonymous/two-user/admin tests pass |
+| S5 | Accurate starter designs and public beta rollout | Six starters prepared; rollout gates pending | Provider setup, hosted QA and restore drill pass |
 
 Current branch: codex/supabase-community. Supabase plugin connection requested; production configuration remains untouched.
 
@@ -91,3 +91,15 @@ Feature branch `codex/supabase-community`; main and hosted demo have not been ch
 - Local browser sign-out returned to anonymous gallery and removed private editor/account controls.
 
 - Added pull-request validation workflow: demo-only build/unit tests plus disposable local Supabase integration tests. CI execution evidence is pending its first run; it receives no production variables.
+
+### Hosted foundation now provisioned
+- Created `css-pro` in confirmed free organization `tyy-d's`, US East North Virginia (`us-east-1`). Project ref: `qujticcgxmlpzkxkznrh`; dashboard: https://supabase.com/dashboard/project/qujticcgxmlpzkxkznrh . Earlier provisioning blockers above are resolved.
+- Applied initial, community, and dashboard-RLS-helper corrective migrations. Deployed `upload-image` version 1 with explicit `auth.getUser()` token validation. Gateway JWT validation is disabled for modern key compatibility; the function itself rejects unsigned requests.
+- Hosted smoke checks: anonymous discovery returns HTTP 200 with empty collection; unsigned upload returns HTTP 400 “Sign in to upload.” No test users or demo submissions were imported into production.
+- Auth site URL and exact allowlist saved: `https://tyy-d.github.io/css_pro/`, `http://127.0.0.1:5173/`, `http://127.0.0.1:4173/`.
+- Created GitHub OAuth app CSS Pro under tyy-d, with Supabase callback; GitHub provider shows enabled. Client secret was transferred directly between configuration interfaces, never written to repository or chat. Email-password provider disabled; Google setup is in progress.
+- Security advisor: rate/reservation tables intentionally have RLS with no client policies; authenticated SECURITY DEFINER mutations and self-role helper warnings are expected for the explicitly authorized RPC design. Dashboard event-trigger helper execution was revoked from public API roles. Review guidance: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable . This is not a claim that all hosted launch checks passed.
+- CI proof: https://github.com/tyy-d/css_pro/actions/runs/38301867354 passed unit tests, build, real isolated Supabase integration and cleanup. Browser testing also caught and fixed live FileList clearing before async upload; a selected screenshot now remains in the draft and explicit local publication succeeds.
+- Production Pages configuration remains demo; Google OAuth, verified admin account, starter publication, hosted user journeys and restore/rollback gate are still pending.
+
+- Extended local browser verification: uploaded screenshot retained after file-input reset, full code publication, private title edit saved without changing public title, conversion to prompt recipe and explicit Publish changes all passed. Google Cloud Console project selector remains loading; requested the user's intended Google project ID. GitHub is configured but real hosted OAuth/account activation is not yet verified.

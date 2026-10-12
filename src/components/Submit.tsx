@@ -127,6 +127,7 @@ export function Submit({
     kind: "screenshot" | "asset",
   ) {
     if (!files) return;
+    const queuedFiles = Array.from(files);
     setBusy(true);
     setErrors([]);
     let current = d;
@@ -135,7 +136,7 @@ export function Submit({
       setD(current);
       setDirty(false);
       onPersisted(current.id);
-      for (const file of Array.from(files)) {
+      for (const file of queuedFiles) {
         setUploads((v) => [
           ...v.filter((x) => x.file !== file),
           { file, kind, progress: 0 },

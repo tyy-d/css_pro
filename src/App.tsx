@@ -391,6 +391,7 @@ export default function App() {
               <button
                 className="account-button"
                 title="My designs"
+                aria-label="My designs"
                 onClick={() => navigate("mine")}
               >
                 <span className="avatar">{viewer.name[0]}</span>

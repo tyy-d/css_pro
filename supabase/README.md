@@ -12,7 +12,7 @@ The main-only Pages workflow reads repository variables `CSS_PRO_DATA_MODE`, `SU
 ## Hosted setup
 
 1. Create free `css-pro` in the confirmed `tyy-d's` organization, US East Northern Virginia.
-2. Apply both migrations in filename order; deploy `upload-image`, including `_shared/image.ts`. The function authenticates the bearer token using Auth before accepting content; enable gateway JWT validation when compatible with the project's JWT signing configuration.
+2. Apply all migrations in filename order; deploy `upload-image`, including `_shared/image.ts`. The function authenticates the bearer token using Auth before accepting content; enable gateway JWT validation when compatible with the project's JWT signing configuration.
 3. In Auth URL configuration set site URL `https://tyy-d.github.io/css_pro/`. Allow exactly that URL plus `http://127.0.0.1:5173/` and `http://127.0.0.1:4173/`. Callback state lives in same-tab sessionStorage and is consumed after login.
 4. Enable Google and GitHub providers. Register each provider's callback as `https://PROJECT_REF.supabase.co/auth/v1/callback`. Enter provider client secrets only in provider/Supabase configuration interfaces. Google web client authorized origin is the Pages origin, `https://tyy-d.github.io`.
 5. Sign in as the intended administrator, verify the Auth user ID, then explicitly update that profile's `is_admin` in the SQL editor. Never infer the admin from first registration. Test with two separate ordinary accounts too.
@@ -33,3 +33,5 @@ Restore into a separate disposable project. Apply schema/migrations, restore dat
 Keep database content and additive migrations. Roll back frontend code to a known compatible build using the same Supabase project, or deploy a maintenance build that disables community access. Do not set demo mode to hide a production outage. Retain exports and logs, investigate Auth/Edge/Postgres errors, and repeat the affected launch checks before resuming publication. Free-tier inactivity and quota limits require operational attention.
 
 References: [Supabase redirect configuration](https://supabase.com/docs/guides/auth/redirect-urls), [API key guidance](https://supabase.com/docs/guides/getting-started/api-keys), [current free-tier limits](https://supabase.com/pricing).
+
+Provisioned project: `qujticcgxmlpzkxkznrh` (CSS Pro, us-east-1), https://qujticcgxmlpzkxkznrh.supabase.co . GitHub provider configured; consult ROADMAP.md for current launch blockers.

@@ -43,6 +43,12 @@ beforeAll(async () => {
     readFileSync("supabase/migrations/202610120001_community.sql", "utf8"),
   );
   await db.exec(
+    readFileSync(
+      "supabase/migrations/202610120002_dashboard_rls_helper.sql",
+      "utf8",
+    ),
+  );
+  await db.exec(
     `insert into auth.users values('${owner}','{"full_name":"Owner"}'),('${other}','{"full_name":"Other"}'),('${admin}','{"full_name":"Admin"}');update public.profiles set is_admin=true where id='${admin}';`,
   );
 }, 30000);
