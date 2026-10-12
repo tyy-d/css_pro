@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,26 +10,44 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { EMPTY_DESIGN, TAGS, type Design, type Viewer } from "../lib/types";
+import {
+  EMPTY_DESIGN,
+  TAGS,
+  type Design,
+  type EditorDraft,
+  type Viewer,
+} from "../lib/types";
 import { previewDocument, validateDesign } from "../lib/preview";
-import { saveDesign, uploadImage } from "../lib/repository";
+import {
+  saveDraft,
+  publishDraft,
+  uploadImage,
+  message,
+} from "../lib/repository";
 export function Submit({
   initial,
   viewer,
   onClose,
   onSaved,
   notify,
+  onDirtyChange,
+  onPersisted,
 }: {
-  initial?: Design;
+  onDirtyChange: (dirty: boolean) => void;
+  onPersisted: (id: string) => void;
+  initial?: EditorDraft;
   viewer: Viewer;
   onClose: () => void;
   onSaved: (d: Design) => void;
   notify: (s: string) => void;
 }) {
-  const [d, setD] = useState<Design>(
+  const [d, setD] = useState<EditorDraft>(
     () =>
       initial || {
         ...EMPTY_DESIGN,
+        draft_revision: 0,
+        base_revision: 0,
+        published: false,
         id: crypto.randomUUID(),
         owner_id: viewer.id,
         creator: viewer.name,
@@ -41,84 +59,132 @@ export function Submit({
   const [agree, setAgree] = useState(!!initial?.license_accepted);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const patch = (values: Partial<Design>) => setD((v) => ({ ...v, ...values }));
+  const [dirty, setDirty] = useState(false);
+  const [uploads, setUploads] = useState<
+    {
+      file: File;
+      kind: "screenshot" | "asset";
+      progress: number;
+      error?: string;
+    }[]
+  >([]);
+  useEffect(() => {
+    onDirtyChange(dirty || busy);
+    return () => onDirtyChange(false);
+  }, [dirty, busy, onDirtyChange]);
+  useEffect(() => {
+    const guard = (e: BeforeUnloadEvent) => {
+      if (dirty || busy) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", guard);
+    return () => window.removeEventListener("beforeunload", guard);
+  }, [dirty, busy]);
+  const patch = (values: Partial<Design>) => {
+    setDirty(true);
+    setD((v) => ({ ...v, ...values }));
+  };
   const src = useMemo(() => previewDocument(d), [d]);
   async function save(publish: boolean) {
     setErrors([]);
+    const candidate = { ...d, license_accepted: agree };
     if (publish) {
-      const e = validateDesign(d);
+      const issues = validateDesign(candidate);
       if (!agree)
-        e.push("Confirm the MIT license and asset rights before publishing.");
-      if (e.length) {
-        setErrors(e);
+        issues.push(
+          "Confirm the MIT license and asset rights before publishing.",
+        );
+      if (issues.length) {
+        setErrors(issues);
         return;
       }
     }
     setBusy(true);
     try {
-      const next = {
-        ...d,
-        title: d.title.trim() || "Untitled design",
-        status: publish ? ("published" as const) : ("draft" as const),
-        updated_at: new Date().toISOString(),
-        license_accepted: agree,
-      };
-      await saveDesign(next);
-      onSaved(next);
+      const saved = await saveDraft(candidate);
+      setD(saved);
+      setDirty(false);
+      onPersisted(saved.id);
+      if (publish) {
+        await publishDraft(saved);
+        onSaved({ ...saved, status: "published" });
+      }
       notify(
         publish
-          ? "Your design is published. Thanks for sharing."
-          : "Draft saved. You can find it in My designs.",
+          ? "Your design is published."
+          : "Private draft saved. The public version is unchanged.",
       );
     } catch (e) {
-      setErrors([e instanceof Error ? e.message : String(e)]);
+      setErrors([message(e)]);
     } finally {
       setBusy(false);
     }
   }
-  async function upload(files: FileList | null, kind: "screenshot" | "asset") {
+  async function upload(
+    files: FileList | File[] | null,
+    kind: "screenshot" | "asset",
+  ) {
     if (!files) return;
     setBusy(true);
+    setErrors([]);
+    let current = d;
     try {
-      if (
-        kind === "screenshot" &&
-        d.assets.filter((a) => a.kind === "screenshot").length + files.length >
-          5
-      )
-        throw new Error("You can add up to five screenshots.");
-      const localBytes = d.assets.reduce(
-        (n, a) => n + (a.url.startsWith("data:") ? a.url.length * 0.75 : 0),
-        0,
-      );
-      if (
-        [...files].reduce((n, f) => n + f.size, localBytes) >
-        10 * 1024 * 1024
-      )
-        throw new Error("Keep all images under 10 MB per design.");
-      await saveDesign({
-        ...d,
-        title: d.title || "Untitled design",
-        status: initial?.status === "published" ? "published" : "draft",
-      });
-      const added = [];
-      for (const f of files) added.push(await uploadImage(f, d.id, kind));
-      const next = { ...d, assets: [...d.assets, ...added] };
-      await saveDesign({
-        ...next,
-        title: next.title || "Untitled design",
-        status: initial?.status === "published" ? "published" : "draft",
-      });
-      setD(next);
-      notify("Images added.");
+      current = await saveDraft({ ...d, license_accepted: agree });
+      setD(current);
+      setDirty(false);
+      onPersisted(current.id);
+      for (const file of Array.from(files)) {
+        setUploads((v) => [
+          ...v.filter((x) => x.file !== file),
+          { file, kind, progress: 0 },
+        ]);
+        try {
+          if (
+            kind === "screenshot" &&
+            current.assets.filter((a) => a.kind === kind).length >= 5
+          )
+            throw new Error("Use at most five screenshots.");
+          if (
+            current.assets.reduce((n, a) => n + (a.bytes || 0), file.size) >
+            10 * 1024 * 1024
+          )
+            throw new Error("Keep all images under 10 MB per design.");
+          const asset = await uploadImage(file, current.id, kind, (progress) =>
+            setUploads((v) =>
+              v.map((x) => (x.file === file ? { ...x, progress } : x)),
+            ),
+          );
+          current = { ...current, assets: [...current.assets, asset] };
+          setD(current);
+          setDirty(true);
+          current = await saveDraft(current);
+          setD(current);
+          setDirty(false);
+          onPersisted(current.id);
+          setUploads((v) => v.filter((x) => x.file !== file));
+        } catch (e) {
+          setUploads((v) =>
+            v.map((x) => (x.file === file ? { ...x, error: message(e) } : x)),
+          );
+        }
+      }
     } catch (e) {
-      notify(e instanceof Error ? e.message : String(e));
+      setErrors([message(e)]);
     } finally {
       setBusy(false);
     }
   }
   return (
     <main className="submit-page">
-      <button className="text-button back" onClick={onClose}>
+      <button
+        className="text-button back"
+        onClick={() => {
+          if (!dirty || confirm("Leave without saving your changes?"))
+            onClose();
+        }}
+      >
         <ArrowLeft size={16} /> Back to library
       </button>
       <div className="submit-heading">
@@ -141,7 +207,7 @@ export function Submit({
         ))}
       </div>
       <div className="submit-grid">
-        <section className="form-panel">
+        <section className="form-panel" inert={busy}>
           {step === 0 && (
             <>
               <h2>What are you sharing?</h2>
@@ -218,12 +284,44 @@ export function Submit({
                   }}
                 />
               </label>
+              <div aria-live="polite">
+                {uploads.map((u, i) => (
+                  <p key={i}>
+                    {u.file.name}: {u.error || `${u.progress}%`}
+                    {u.error && (
+                      <button
+                        disabled={busy}
+                        onClick={() => void upload([u.file], u.kind)}
+                      >
+                        Retry
+                      </button>
+                    )}
+                  </p>
+                ))}
+              </div>
               <div className="upload-thumbs">
                 {d.assets
                   .filter((a) => a.kind === "screenshot")
                   .map((a) => (
                     <div key={a.id}>
                       <img src={a.url} alt={a.name} />
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() =>
+                          patch({
+                            assets: [
+                              a,
+                              ...d.assets.filter((x) => x.id !== a.id),
+                            ],
+                          })
+                        }
+                      >
+                        {d.assets.find((x) => x.kind === "screenshot")?.id ===
+                        a.id
+                          ? "Cover"
+                          : "Use as cover"}
+                      </button>
                       <button
                         aria-label={`Remove ${a.name}`}
                         onClick={() =>
@@ -388,7 +486,7 @@ export function Submit({
                 <input
                   type="checkbox"
                   checked={agree}
-                  onChange={(e) => setAgree(e.target.checked)}
+                  onChange={(e) => (setAgree(e.target.checked), setDirty(true))}
                 />
                 <span>
                   I have the right to share this work. I license the code and
@@ -436,7 +534,7 @@ export function Submit({
                 <input
                   type="checkbox"
                   checked={agree}
-                  onChange={(e) => setAgree(e.target.checked)}
+                  onChange={(e) => (setAgree(e.target.checked), setDirty(true))}
                 />
                 <span>
                   I accept the MIT license and confirm redistribution rights for
@@ -479,7 +577,7 @@ export function Submit({
                 disabled={busy}
                 onClick={() => save(true)}
               >
-                {busy ? "Saving…" : "Publish design"}
+                {busy ? "Saving…" : d.published ? "Publish changes" : "Publish"}
                 <ArrowRight size={16} />
               </button>
             )}

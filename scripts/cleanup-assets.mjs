@@ -17,6 +17,17 @@ for (let offset = 0; ; offset += 500) {
     for (const a of d.assets) if (a.path) referenced.add(a.path);
   if (data.length < 500) break;
 }
+for (let offset = 0; ; offset += 500) {
+  const { data, error } = await client
+    .from("design_drafts")
+    .select("content")
+    .range(offset, offset + 499);
+  if (error) throw error;
+  for (const draft of data)
+    for (const asset of draft.content.assets || [])
+      if (asset.path) referenced.add(asset.path);
+  if (data.length < 500) break;
+}
 async function list(prefix) {
   const all = [];
   for (let offset = 0; ; offset += 500) {

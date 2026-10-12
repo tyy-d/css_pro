@@ -50,3 +50,36 @@ Connect the production services, then run the live launch gate. If services are 
 - Hosted code ZIP downloaded and inspected: HTML/CSS, README, MIT license, AI handoff and screenshot reference. Both source URLs retain /css_pro/ correctly.
 - Added accessible name to the icon-only mobile Share button during hosted QA.
 - GitHub Pages hosts the static application only; real OAuth and shared community persistence remain unconfigured.
+
+## Community backend implementation — 2026-10-12
+| ID | Milestone | Status | Gate |
+|---|---|---|---|
+| S1 | Explicit configuration, corrective migration, upload function, new hosted project | In progress | Local services pass; hosted project reachable |
+| S2 | OAuth callbacks, profile, recovery and identity isolation | Ready | Google/GitHub verified on hosted origin |
+| S3 | Private revisioned drafts, uploads, explicit atomic publication | Ready | Both content types complete lifecycle with no draft leakage |
+| S4 | Paginated search, lazy assets, stars and moderation | Ready | Anonymous/two-user/admin tests pass |
+| S5 | Accurate starter designs and public beta rollout | Ready | Provider setup, hosted QA and restore drill pass |
+
+Current branch: codex/supabase-community. Supabase plugin connection requested; production configuration remains untouched.
+
+## Auth and protected-route follow-up — 2026-10-12
+- Added loading/sign-in/admin gates for direct `submit`, `mine`, `stars`, and `admin` query routes. Public browsing remains available.
+- OAuth uses PKCE and retains the current app path/query; provider-denial callbacks are cleared and shown as a retryable message. Session changes clear rendered private records, reports and editor state; superseded refreshes cannot commit their results.
+- Added seven focused auth tests for route roles, session restoration/sign-out gates, subpath return URLs and denied callbacks. Full suite: 30 tests passed.
+- Supabase connector discovery found only unrelated inactive `guess-league`; no hosted project was modified. CSS Pro organization selection is pending, followed by required cost confirmation, provider configuration and live OAuth/access tests.
+- Concurrent workspace changes were detected in the repository adapter/config/types during this work; existing changes were preserved. Combined `npm run build` passed. Auth work remains in review pending hosted journeys.
+- Organization confirmed by user: `tyy-d's` (`vgtnlndndtrcqyzvuipb`). Provisioning attempted on 2026-10-12, but the connector returned UNAVAILABLE for its required `get_cost` operation. Plugin discovery confirms Supabase is installed/enabled. Dashboard fallback is open at sign-in; user login is required before continuing setup. No project created and no deployment/data connection changed.
+
+## Community implementation evidence — 2026-10-12
+
+Feature branch `codex/supabase-community`; main and hosted demo have not been changed.
+
+- S1 local foundation implemented: explicit configuration modes, separate working-draft table, revision-checked save/publish RPCs, published-manifest Storage policies, bounded upload bodies, server image type/dimension checks. Hosted provisioning remains blocked on identifying the new project; connector lists only unrelated inactive `guess-league`. User confirmed organization and reported setup ready; project reference requested to resolve the mismatch. No unrelated project modified.
+- S2 local implementation: PKCE callback handling, exact root return URL with same-tab intended actions, private-route guards, display-name editing, sign-out/identity cache clearing, suspended-account messaging. Both real OAuth providers and expired-session browser recovery are launch blockers until hosted verification.
+- S3 implementation: private draft saves, explicit publication, upload progress and individual retry, preserved successful assets, cover selection, navigation/reload guards, editor URL recovery, explicit unpublish-before-delete. Full browser lifecycle for both submission types still needs hosted verification.
+- S4 implementation: nine summaries/page via database RPC, total counts, filters/creator/private stars, lazy detail assets, optimistic stars, report resolution and hide/restore. Downloads recheck current published visibility. Maintenance now retains working-draft assets.
+- Evidence: `npm test` passes **34 tests**, including both SQL migrations, malformed-field rejection, stale revisions, private edit/image isolation, and moderation restore/suspension boundaries. `npm run build` passes (bundle-size advisory remains).
+- Real local services: `npm run test:integration` passes against Docker Supabase Auth, Storage and Edge Function. Covers two ordinary users plus explicit test admin; invalid uploads/non-owner uploads; unpublished assets; unique concurrent stars; concurrent publication (one winner); profile update; report/hide/restore; unpublish; and denied admin escalation. Temporary users/assets are cleaned up.
+- Browser demo evidence: share prompts sign-in and returns to editor; explicit private save succeeds; named draft recovers after reload using its editor URL. Mobile header sign-out retained. This is local browser evidence, not hosted OAuth proof.
+- S5 **not complete**: six accurate original starter screenshots and owner publication, provider configuration/logs, hosted anonymous/two-user/admin QA, export/restore drill and rollback verification remain before beta. Existing demo illustrations are not imported or represented as verified starter screenshots.
+- Operational setup and remaining launch procedure: `supabase/README.md`; public demo remains operational. Never enable production Supabase mode until these gates are evidenced.

@@ -1,12 +1,12 @@
 import { ArrowUpRight, Code2, Sparkles, Star } from "lucide-react";
-import type { Design } from "../lib/types";
+import type { DesignSummary } from "../lib/types";
 export function DesignCard({
   design: d,
   starred,
   onOpen,
   onStar,
 }: {
-  design: Design;
+  design: DesignSummary;
   starred: boolean;
   onOpen: () => void;
   onStar: () => void;
@@ -22,6 +22,7 @@ export function DesignCard({
           src={d.assets.find((a) => a.kind === "screenshot")?.url}
           alt={`${d.title} design preview`}
           loading="lazy"
+          onError={e => { e.currentTarget.style.visibility = "hidden"; e.currentTarget.parentElement?.setAttribute("data-image-error", "Preview unavailable — open design to retry"); }}
         />
         <span className="card-type">
           {d.type === "code" ? <Code2 size={13} /> : <Sparkles size={13} />}{" "}

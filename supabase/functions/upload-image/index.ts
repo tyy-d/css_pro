@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { validateImage, boundedBody } from '../_shared/image.ts';
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods':'POST, OPTIONS' };
 Deno.serve(async (req: Request) => {
  if(req.method==='OPTIONS') return new Response('ok',{headers:cors});
@@ -10,12 +11,12 @@ Deno.serve(async (req: Request) => {
   const admin=createClient(url,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
   const {data:profile}=await admin.from('profiles').select('suspended').eq('id',user.id).single();if(!profile||profile.suspended)throw new Error('Account unavailable');
   if(Number(req.headers.get('content-length')||0)>11*1024*1024)throw new Error('Upload too large');
-  const form=await req.formData();const file=form.get('file');const designId=String(form.get('designId')||'');
+  const body=await boundedBody(req);
+  const form=await new Request(req.url,{method:"POST",headers:req.headers,body}).formData();const file=form.get('file');const designId=String(form.get('designId')||'');
   if(!(file instanceof File)||!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>10*1024*1024)throw new Error('Use PNG, JPEG, or WebP images under 10 MB');
   const {data:design}=await admin.from('designs').select('owner_id,status').eq('id',designId).single();if(!design||design.owner_id!==user.id||design.status==='hidden')throw new Error('You can only upload to your own editable designs');
   const b=new Uint8Array(await file.arrayBuffer());
-  const valid=(file.type==='image/png'&&b[0]===137&&b[1]===80&&b[2]===78&&b[3]===71)||(file.type==='image/jpeg'&&b[0]===255&&b[1]===216&&b[2]===255)||(file.type==='image/webp'&&String.fromCharCode(...b.slice(0,4))==='RIFF'&&String.fromCharCode(...b.slice(8,12))==='WEBP');
-  if(!valid)throw new Error('The file contents do not match its image type');
+  validateImage(b,file.type);
   const id=crypto.randomUUID();const name=`${id.slice(0,8)}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;const path=`${designId}/${name}`;
   // reserve_upload serializes quota reservations for concurrent uploads to this design.
   const {error:reserveError}=await caller.rpc('reserve_upload',{target:designId,object_path:path,byte_count:file.size});if(reserveError)throw reserveError;

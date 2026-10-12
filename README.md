@@ -1,6 +1,6 @@
 # CSS Pro
 
-A visual design-sharing MVP for people building websites with AI. React, TypeScript, Vite, and Supabase, ready for Cloudflare Pages.
+A visual design-sharing MVP for people building websites with AI. React, TypeScript, Vite, and Supabase, hosted on GitHub Pages.
 
 ## Run locally
 
@@ -35,43 +35,22 @@ Original sample illustrations are labeled. The supplied sample HTML/CSS is a sim
 
 ## Connect Supabase
 
-1. Create a Supabase project. Keep its service-role key private.
-2. Apply `supabase/migrations/202610090001_initial.sql` to a **fresh** project using the SQL editor or Supabase CLI migrations. Do not apply twice.
-3. Copy `.env.example` to `.env.local` and set the project URL and public anon key. Restart Vite:
+Follow [backend setup and operations](supabase/README.md). Apply both migrations in filename order to a fresh project, deploy the upload function, configure Google/GitHub providers, and explicitly assign the verified administrator account. Provider secrets stay in configuration interfaces.
 
-```dotenv
-VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-VITE_SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_KEY
-```
-
-4. Enable Google and GitHub in Authentication → Providers. Configure the provider apps with the callback URL shown by Supabase. Set the Auth site URL to the production origin and add the exact local development origin to allowed redirect URLs. Do not use a wildcard production redirect.
-5. Deploy the image-upload function. It explicitly validates the user's token using `auth.getUser()`; gateway JWT verification is disabled for compatibility with current project key formats:
+For disposable local integration tests:
 
 ```sh
-npx supabase login
-npx supabase link --project-ref YOUR_PROJECT_REF
-npx supabase functions deploy upload-image --no-verify-jwt
+npx supabase start
+npx supabase functions serve upload-image
+# In another terminal:
+npm run test:integration
 ```
 
-The Edge Function's `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are supplied by Supabase. Never copy the service-role key into the frontend environment.
+The integration suite creates and cleans up temporary local users/assets. It tests actual Auth, Storage and Edge Function behavior; hosted OAuth must still be verified separately.
 
-6. Sign in once to create your profile, then grant your own profile administrator status in the SQL editor:
+For the browser to use local services, explicitly set `VITE_DATA_MODE=supabase` and the local `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` in ignored `.env.local`. Preview builds use `VITE_DATA_MODE=demo`. Never connect development tests to production data.
 
-```sql
-update public.profiles set is_admin = true where id = 'YOUR_AUTH_USER_UUID';
-```
-
-7. Run the live launch checks below. The local database tests use real PostgreSQL through PGlite but mock Supabase's auth/storage schemas; they do not substitute for hosted OAuth, Storage API, or Edge Function integration testing.
-
-## Deploy to Cloudflare Pages
-
-1. Put this project in a GitHub repository and connect that repository to Cloudflare Pages.
-2. Use build command `npm run build`, output directory `dist`, and Node.js 24.
-3. Set the two public `VITE_SUPABASE_*` variables in the **production** environment. Leave preview deployments unconfigured for demo mode, or connect a separate staging project. Never use production data for preview tests.
-4. Deploy. Use the returned `pages.dev` URL as the Supabase Auth site URL; add a custom domain later if wanted.
-5. The public URL is not created by running the local app. No hosting account or live backend has been provisioned by this repository.
-
-Free-tier quotas and inactivity behavior can change. Check the provider dashboards before launch. Supabase may pause inactive free projects. No paid service or domain is required to inspect this MVP locally.
+The main-only GitHub Pages workflow reads `CSS_PRO_DATA_MODE` (defaults to demo), `SUPABASE_URL`, and `SUPABASE_PUBLISHABLE_KEY` repository variables. Production remains demo until launch checks pass. Missing configuration in Supabase mode fails visibly instead of falling back to demo.
 
 ## Live launch checklist
 
@@ -85,11 +64,11 @@ Free-tier quotas and inactivity behavior can change. Check the provider dashboar
 - Test downloads with uploaded images and confirm referenced file paths work offline.
 - Test mobile keyboard flow and visible errors. Verify the provider logs for unexpected failures.
 - Export database plus storage assets and exercise a restore in a separate project before inviting public users.
-- Test deployment rollback using the preceding Cloudflare Pages deployment. Keep database migrations backward-compatible when rolling back frontend code.
+- Test deployment rollback using the preceding compatible GitHub Pages build. Keep database migrations backward-compatible when rolling back frontend code.
 
 ## Operations and deliberate MVP boundaries
 
-Search/filtering currently runs over the permitted records loaded by the client. Database full-text/tag indexes are prepared, but moving search/pagination to a database RPC and loading only visible thumbnails is the first scaling task before a large public collection. No arbitrary record cap silently drops designs.
+Supabase discovery returns nine summaries and a total count per page. Search includes title, description, tags and creator; filters use OR within tags and AND between groups. Full source and additional assets load on opening a design. Working drafts are separate from published records, with explicit revision-checked publication. Public Storage reads require an asset to be present in the published manifest.
 
 Tags are a controlled list in `src/lib/types.ts` and the SQL allowlist. Editing tags is a versioned code/migration change in this MVP, not an admin tag editor. Account suspension is available through `suspend_creator` for administrators; there is no separate user-management screen yet. Aggregate product analytics are not enabled; provider logs support initial debugging without sending prompt contents to analytics vendors.
 
@@ -105,6 +84,6 @@ Start with `PROJECT_BRIEF.md`, `ROADMAP.md`, and `AGENTS.md`. Update the brief a
 
 ## GitHub Pages demo
 
-The requested demo target is `https://tyy-d.github.io/css_pro/`, with source at `https://github.com/tyy-d/css_pro`. The Pages workflow tests and builds every push to `main`, then deploys the `dist` artifact. It intentionally has no Supabase environment configuration: the public website uses browser-local demo data.
+The requested demo target is `https://tyy-d.github.io/css_pro/`, with source at `https://github.com/tyy-d/css_pro`. The Pages workflow tests and builds every push to `main`, then deploys the `dist` artifact. Production repository variables remain unset: the public website uses browser-local demo data until the connected beta launch gate passes.
 
 Relative Vite assets and path-aware design/auth links support the `/css_pro/` subpath. The application uses query-string navigation, so direct design links and browser refresh work without a Pages rewrite rule. Cloudflare-specific `_headers` and `_redirects` are ignored by GitHub Pages; preview isolation is enforced in the application iframe and its embedded CSP.
