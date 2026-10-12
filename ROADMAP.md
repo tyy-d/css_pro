@@ -89,3 +89,5 @@ Feature branch `codex/supabase-community`; main and hosted demo have not been ch
 - Six original source packages prepared in `starter-designs/designs.json`, with JPEGs captured directly from each exact HTML/CSS document at 800 × 640. Covers and text were inspected in the browser. These are clearly labeled static starter designs, not functional applications.
 - `scripts/import-starters.mjs` creates owner-authenticated private drafts by default, requires explicit project/owner identity, and only publishes with `--publish`. It has not been run against the hosted project. Owner attribution/publication remain launch blockers.
 - Local browser sign-out returned to anonymous gallery and removed private editor/account controls.
+
+- Added pull-request validation workflow: demo-only build/unit tests plus disposable local Supabase integration tests. CI execution evidence is pending its first run; it receives no production variables.
